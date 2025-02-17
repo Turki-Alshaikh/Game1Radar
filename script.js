@@ -57,7 +57,7 @@ async function fetchFreeGames() {
             throw new Error("No free games found.");
         }
 
-        // تصفية الألعاب غير المرغوب فيها (DLC، Game Pass، إضافات، إلخ)
+        // تصفية الألعاب غير المرغوب فيها (DLC، Game Pass، إضافات، Battle Pass، Bundles، إلخ)
         const filteredGames = data.filter(game => {
             const title = game.title.toLowerCase();
             const isGame = !title.includes("dlc") && 
@@ -66,7 +66,12 @@ async function fetchFreeGames() {
                            !title.includes("expansion") && 
                            !title.includes("wallpaper") && 
                            !title.includes("lynn") && 
-                           !title.includes("software");
+                           !title.includes("software") &&
+                           !title.includes("battle pass") && 
+                           !title.includes("bundle") && 
+                           !title.includes("pack") && 
+                           !title.includes("season") && 
+                           !title.includes("edition");
             return isGame;
         });
 
@@ -86,6 +91,7 @@ async function fetchFreeGames() {
         return [];
     }
 }
+
 // عرض الألعاب في الواجهة
 function displayGames(games, containerId) {
     const container = document.getElementById(containerId);
