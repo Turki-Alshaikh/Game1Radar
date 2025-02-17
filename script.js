@@ -57,10 +57,17 @@ async function fetchFreeGames() {
             throw new Error("No free games found.");
         }
 
-        // تصفية الألعاب غير المرغوب فيها
+        // تصفية الألعاب غير المرغوب فيها (DLC، Game Pass، إضافات، إلخ)
         const filteredGames = data.filter(game => {
             const title = game.title.toLowerCase();
-            return !title.includes("wallpaper") && !title.includes("lynn") && !title.includes("software");
+            const isGame = !title.includes("dlc") && 
+                           !title.includes("game pass") && 
+                           !title.includes("add-on") && 
+                           !title.includes("expansion") && 
+                           !title.includes("wallpaper") && 
+                           !title.includes("lynn") && 
+                           !title.includes("software");
+            return isGame;
         });
 
         const games = filteredGames.map(game => ({
@@ -79,7 +86,6 @@ async function fetchFreeGames() {
         return [];
     }
 }
-
 // عرض الألعاب في الواجهة
 function displayGames(games, containerId) {
     const container = document.getElementById(containerId);
