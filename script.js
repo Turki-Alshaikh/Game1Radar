@@ -28,7 +28,6 @@ const translations = {
     "ar": {
         "title": "عروض الألعاب المجانية",
         "subtitle": "ابحث عن أحدث الألعاب المجانية من منصات مختلفة!",
-        "featuredGames": "أبرز الألعاب",
         "freeGames": "جميع الألعاب المجانية",
         "normalPrice": "السعر العادي: ",
         "salePrice": "السعر المخفض: ",
@@ -39,7 +38,6 @@ const translations = {
     "en": {
         "title": "Free Game Deals",
         "subtitle": "Find the latest free games from various platforms!",
-        "featuredGames": "Featured Games",
         "freeGames": "All Free Games",
         "normalPrice": "Normal Price: ",
         "salePrice": "Sale Price: ",
@@ -59,40 +57,30 @@ async function fetchFreeGames() {
             throw new Error("No free games found.");
         }
 
-        // تصنيف الألعاب إلى "أبرز الألعاب" و "جميع الألعاب المجانية"
-        const featuredGames = data.filter(game => {
+        // تصفية الألعاب غير المرغوب فيها (DLC، Game Pass، إضافات، Battle Pass، Bundles، إلخ)
+        const filteredGames = data.filter(game => {
             const title = game.title.toLowerCase();
-            return title.includes("dlc") || 
-                   title.includes("game pass") || 
-                   title.includes("add-on") || 
-                   title.includes("expansion") || 
-                   title.includes("battle pass") || 
-                   title.includes("bundle") || 
-                   title.includes("pack") || 
-                   title.includes("season") || 
-                   title.includes("edition");
-        });
-
-        const allFreeGames = data.filter(game => {
-            const title = game.title.toLowerCase();
-            return !title.includes("wallpaper") && 
+            return !title.includes("dlc") && 
+                   !title.includes("game pass") && 
+                   !title.includes("add-on") && 
+                   !title.includes("expansion") && 
+                   !title.includes("battle pass") && 
+                   !title.includes("bundle") && 
+                   !title.includes("pack") && 
+                   !title.includes("season") && 
+                   !title.includes("edition") && 
+                   !title.includes("wallpaper") && 
                    !title.includes("lynn") && 
                    !title.includes("software");
         });
 
-        // ترتيب الألعاب حسب الشعبية (بناءً على السعر أو أي معيار آخر)
-        allFreeGames.sort((a, b) => b.metacriticScore - a.metacriticScore); // مثال: ترتيب حسب تقييم Metacritic
+        // ترتيب الألعاب حسب الأفضل (بناءً على تقييم Metacritic أو السعر)
+        filteredGames.sort((a, b) => b.metacriticScore - a.metacriticScore); // مثال: ترتيب حسب تقييم Metacritic
 
-        return {
-            featuredGames: featuredGames.map(game => formatGame(game)),
-            allFreeGames: allFreeGames.map(game => formatGame(game))
-        };
+        return filteredGames.map(game => formatGame(game));
     } catch (error) {
         console.error("Error fetching free games:", error);
-        return {
-            featuredGames: [],
-            allFreeGames: []
-        };
+        return [];
     }
 }
 
@@ -147,7 +135,6 @@ function updateLanguage() {
     document.documentElement.dir = currentLanguage === "ar" ? "rtl" : "ltr";
     document.querySelector("header h1").textContent = translations[currentLanguage].title;
     document.querySelector("header p").textContent = translations[currentLanguage].subtitle;
-    document.querySelector("#featured-games h2").textContent = translations[currentLanguage].featuredGames;
     document.querySelector("#free-games h2").textContent = translations[currentLanguage].freeGames;
     document.getElementById("language-button").textContent = translations[currentLanguage].languageButton;
 }
@@ -161,9 +148,8 @@ function toggleLanguage() {
 
 // الوظيفة الرئيسية
 async function main() {
-    const { featuredGames, allFreeGames } = await fetchFreeGames();
-    displayGames(featuredGames, "featured-games-container");
-    displayGames(allFreeGames, "free-games-container");
+    const freeGames = await fetchFreeGames();
+    displayGames(freeGames, "free-games-container");
 }
 
 // تشغيل الوظيفة الرئيسية
