@@ -1,10 +1,6 @@
-let currentLanguage = "ar"; // Default language is Arabic
+let currentLanguage = "ar"; // اللغة الافتراضية هي العربية
 
-// Telegram Bot Configuration
-const TELEGRAM_BOT_TOKEN = "8013441748:AAHR60HPhGXM0Rsoz9IoiCjjGBizMNP86D4"; // Replace with your bot token
-const TELEGRAM_GROUP_ID = "-4613971882"; // Replace with your group chat ID
-
-// Platform logos
+// منصات الألعاب
 const platformLogos = {
     "Steam": "https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg",
     "Epic Games": "https://upload.wikimedia.org/wikipedia/commons/3/31/Epic_Games_logo.svg",
@@ -12,23 +8,22 @@ const platformLogos = {
     "GOG.com": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/GOG.com_logo.svg/800px-GOG.com_logo.svg.png",
     "Origin": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Origin_logo.svg",
     "Ubisoft Store": "https://upload.wikimedia.org/wikipedia/commons/3/31/Ubisoft_logo.svg",
-    "Other": "https://via.placeholder.com/40" // Placeholder for unknown platforms
+    "Other": "https://via.placeholder.com/40" // صورة افتراضية
 };
 
-// Mapping of storeID to platform names
+// تعيين معرف المتجر إلى المنصة
 const storeIdToPlatform = {
-    "1": "Steam", // Steam
-    "2": "GOG.com", // GOG
-    "3": "Epic Games", // Epic Games
-    "11": "Epic Games", // Epic Games (alternative ID)
-    "25": "Epic Games", // Epic Games (alternative ID)
-    "7": "Humble Bundle", // Humble Bundle
-    "8": "Origin", // Origin
-    "9": "Ubisoft Store", // Ubisoft Store
-    // Add more mappings as needed
+    "1": "Steam",
+    "2": "GOG.com",
+    "3": "Epic Games",
+    "11": "Epic Games",
+    "25": "Epic Games",
+    "7": "Humble Bundle",
+    "8": "Origin",
+    "9": "Ubisoft Store"
 };
 
-// Language translations
+// الترجمات
 const translations = {
     "ar": {
         "title": "عروض الألعاب المجانية",
@@ -52,52 +47,17 @@ const translations = {
     }
 };
 
-// Track previously seen games
-let previousGames = [];
-
-// Send a message to Telegram group in Arabic
-async function sendTelegramMessage(game) {
-    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
-    const message = `
-🎮 لعبة جديدة مجانية: ${game.title}
-المنصة: ${game.platform}
-<a href="${game.url}">احصل عليها من هنا</a>
-    `;
-
-    const payload = {
-        chat_id: TELEGRAM_GROUP_ID,
-        photo: game.image, // Game image
-        caption: message, // Message with game details
-        parse_mode: "HTML", // Enable HTML parsing for clickable links
-    };
-
-    try {
-        const response = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-        });
-        const data = await response.json();
-        console.log("Telegram API Response:", data);
-    } catch (error) {
-        console.error("Error sending Telegram message:", error);
-    }
-}
-
-// Fetch free games from CheapShark API (fallback to static data if API fails)
+// جلب الألعاب المجانية من CheapShark API
 async function fetchFreeGames() {
     try {
         const response = await fetch("https://www.cheapshark.com/api/1.0/deals?upperPrice=0");
         const data = await response.json();
-        console.log("CheapShark API Response:", data); // Log the response
 
         if (data.length === 0) {
-            throw new Error("No free games found in the API response.");
+            throw new Error("No free games found.");
         }
 
-        // Filter out non-game content (e.g., wallpapers, software)
+        // تصفية الألعاب غير المرغوب فيها
         const filteredGames = data.filter(game => {
             const title = game.title.toLowerCase();
             return !title.includes("wallpaper") && !title.includes("lynn") && !title.includes("software");
@@ -107,50 +67,20 @@ async function fetchFreeGames() {
             title: game.title,
             normalPrice: game.normalPrice,
             salePrice: game.salePrice,
-            image: game.thumb.replace("capsule_sm_120", "header"), // Use higher quality image
+            image: game.thumb.replace("capsule_sm_120", "header"),
             url: `https://www.cheapshark.com/redirect?dealID=${game.dealID}`,
-            platform: storeIdToPlatform[game.storeID] || "Other", // Map storeID to platform
+            platform: storeIdToPlatform[game.storeID] || "Other",
             price: 0
         }));
 
-        // Check for new games
-        const newGames = games.filter(game => !previousGames.includes(game.title));
-        if (newGames.length > 0) {
-            newGames.forEach(game => {
-                sendTelegramMessage(game); // Send Arabic message
-            });
-            previousGames = games.map(game => game.title); // Update previous games list
-        }
-
         return games;
     } catch (error) {
-        console.error("Error fetching free games from CheapShark API:", error);
-
-        // Fallback to static data if the API fails
-        return [
-            {
-                title: "لعبة تجريبية 1",
-                normalPrice: "$19.99",
-                salePrice: "$0.00",
-                image: "https://via.placeholder.com/600x400", // High-quality placeholder
-                url: "#",
-                platform: "Steam", // Add platform
-                price: 0
-            },
-            {
-                title: "لعبة تجريبية 2",
-                normalPrice: "$29.99",
-                salePrice: "$0.00",
-                image: "https://via.placeholder.com/600x400", // High-quality placeholder
-                url: "#",
-                platform: "GOG.com", // Add platform
-                price: 0
-            }
-        ];
+        console.error("Error fetching free games:", error);
+        return [];
     }
 }
 
-// Display games in the HTML
+// عرض الألعاب في الواجهة
 function displayGames(games, containerId) {
     const container = document.getElementById(containerId);
     container.innerHTML = "";
@@ -182,7 +112,7 @@ function displayGames(games, containerId) {
     });
 }
 
-// Update the UI with the current language
+// تحديث اللغة
 function updateLanguage() {
     document.documentElement.lang = currentLanguage;
     document.documentElement.dir = currentLanguage === "ar" ? "rtl" : "ltr";
@@ -192,24 +122,24 @@ function updateLanguage() {
     document.getElementById("language-button").textContent = translations[currentLanguage].languageButton;
 }
 
-// Toggle language between Arabic and English
+// تبديل اللغة
 function toggleLanguage() {
     currentLanguage = currentLanguage === "ar" ? "en" : "ar";
     updateLanguage();
-    main(); // Refresh the game list
+    main(); // تحديث قائمة الألعاب
 }
 
-// Main function to fetch and display games
+// الوظيفة الرئيسية
 async function main() {
     const freeGames = await fetchFreeGames();
     displayGames(freeGames, "free-games-container");
 }
 
-// Run the main function
+// تشغيل الوظيفة الرئيسية
 main();
 
-// Add event listener for the language button
+// إضافة حدث لزر اللغة
 document.getElementById("language-button").addEventListener("click", toggleLanguage);
 
-// Initialize language on page load
+// تهيئة اللغة عند التحميل
 updateLanguage();
