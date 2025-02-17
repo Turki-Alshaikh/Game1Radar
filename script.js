@@ -28,7 +28,8 @@ const translations = {
     "ar": {
         "title": "عروض الألعاب المجانية",
         "subtitle": "ابحث عن أحدث الألعاب المجانية من منصات مختلفة!",
-        "freeGames": "الألعاب المجانية",
+        "featuredGames": "أبرز الألعاب",
+        "freeGames": "جميع الألعاب المجانية",
         "normalPrice": "السعر العادي: ",
         "salePrice": "السعر المخفض: ",
         "getItNow": "احصل عليها الآن",
@@ -38,7 +39,8 @@ const translations = {
     "en": {
         "title": "Free Game Deals",
         "subtitle": "Find the latest free games from various platforms!",
-        "freeGames": "Free Games",
+        "featuredGames": "Featured Games",
+        "freeGames": "All Free Games",
         "normalPrice": "Normal Price: ",
         "salePrice": "Sale Price: ",
         "getItNow": "Get It Now",
@@ -57,39 +59,54 @@ async function fetchFreeGames() {
             throw new Error("No free games found.");
         }
 
-        // تصفية الألعاب غير المرغوب فيها (DLC، Game Pass، إضافات، Battle Pass، Bundles، إلخ)
-        const filteredGames = data.filter(game => {
+        // تصنيف الألعاب إلى "أبرز الألعاب" و "جميع الألعاب المجانية"
+        const featuredGames = data.filter(game => {
             const title = game.title.toLowerCase();
-            const isGame = !title.includes("dlc") && 
-                           !title.includes("game pass") && 
-                           !title.includes("add-on") && 
-                           !title.includes("expansion") && 
-                           !title.includes("wallpaper") && 
-                           !title.includes("lynn") && 
-                           !title.includes("software") &&
-                           !title.includes("battle pass") && 
-                           !title.includes("bundle") && 
-                           !title.includes("pack") && 
-                           !title.includes("season") && 
-                           !title.includes("edition");
-            return isGame;
+            return title.includes("dlc") || 
+                   title.includes("game pass") || 
+                   title.includes("add-on") || 
+                   title.includes("expansion") || 
+                   title.includes("battle pass") || 
+                   title.includes("bundle") || 
+                   title.includes("pack") || 
+                   title.includes("season") || 
+                   title.includes("edition");
         });
 
-        const games = filteredGames.map(game => ({
-            title: game.title,
-            normalPrice: game.normalPrice,
-            salePrice: game.salePrice,
-            image: game.thumb.replace("capsule_sm_120", "header"),
-            url: `https://www.cheapshark.com/redirect?dealID=${game.dealID}`,
-            platform: storeIdToPlatform[game.storeID] || "Other",
-            price: 0
-        }));
+        const allFreeGames = data.filter(game => {
+            const title = game.title.toLowerCase();
+            return !title.includes("wallpaper") && 
+                   !title.includes("lynn") && 
+                   !title.includes("software");
+        });
 
-        return games;
+        // ترتيب الألعاب حسب الشعبية (بناءً على السعر أو أي معيار آخر)
+        allFreeGames.sort((a, b) => b.metacriticScore - a.metacriticScore); // مثال: ترتيب حسب تقييم Metacritic
+
+        return {
+            featuredGames: featuredGames.map(game => formatGame(game)),
+            allFreeGames: allFreeGames.map(game => formatGame(game))
+        };
     } catch (error) {
         console.error("Error fetching free games:", error);
-        return [];
+        return {
+            featuredGames: [],
+            allFreeGames: []
+        };
     }
+}
+
+// تنسيق بيانات اللعبة
+function formatGame(game) {
+    return {
+        title: game.title,
+        normalPrice: game.normalPrice,
+        salePrice: game.salePrice,
+        image: game.thumb.replace("capsule_sm_120", "header"),
+        url: `https://www.cheapshark.com/redirect?dealID=${game.dealID}`,
+        platform: storeIdToPlatform[game.storeID] || "Other",
+        price: 0
+    };
 }
 
 // عرض الألعاب في الواجهة
@@ -130,6 +147,7 @@ function updateLanguage() {
     document.documentElement.dir = currentLanguage === "ar" ? "rtl" : "ltr";
     document.querySelector("header h1").textContent = translations[currentLanguage].title;
     document.querySelector("header p").textContent = translations[currentLanguage].subtitle;
+    document.querySelector("#featured-games h2").textContent = translations[currentLanguage].featuredGames;
     document.querySelector("#free-games h2").textContent = translations[currentLanguage].freeGames;
     document.getElementById("language-button").textContent = translations[currentLanguage].languageButton;
 }
@@ -143,8 +161,9 @@ function toggleLanguage() {
 
 // الوظيفة الرئيسية
 async function main() {
-    const freeGames = await fetchFreeGames();
-    displayGames(freeGames, "free-games-container");
+    const { featuredGames, allFreeGames } = await fetchFreeGames();
+    displayGames(featuredGames, "featured-games-container");
+    displayGames(allFreeGames, "free-games-container");
 }
 
 // تشغيل الوظيفة الرئيسية
