@@ -1,6 +1,6 @@
 # 🎮 Game 1 Radar
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/game1radar/deploy-status)](https://game1radar.netlify.app)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen.svg?style=flat-square)](https://game1radar.netlify.app)
 [![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen.svg?style=flat-square)](https://game1radar.netlify.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![API: CheapShark](https://img.shields.io/badge/API-CheapShark-orange.svg?style=flat-square)](https://www.cheapshark.com/api)
