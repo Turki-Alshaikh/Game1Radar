@@ -1,6 +1,5 @@
-let currentLanguage = "ar"; // اللغة الافتراضية هي العربية
+let currentLanguage = "ar";
 
-// منصات الألعاب
 const platformLogos = {
     "Steam": "https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg",
     "Epic Games": "https://upload.wikimedia.org/wikipedia/commons/3/31/Epic_Games_logo.svg",
@@ -8,97 +7,81 @@ const platformLogos = {
     "GOG.com": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/GOG.com_logo.svg/800px-GOG.com_logo.svg.png",
     "Origin": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Origin_logo.svg",
     "Ubisoft Store": "https://upload.wikimedia.org/wikipedia/commons/3/31/Ubisoft_logo.svg",
-    "Other": "https://via.placeholder.com/40" // صورة افتراضية
+    "Other": "https://via.placeholder.com/40"
 };
 
-// تعيين معرف المتجر إلى المنصة
 const storeIdToPlatform = {
-    "1": "Steam",
-    "2": "GOG.com",
-    "3": "Epic Games",
-    "11": "Epic Games",
-    "25": "Epic Games",
-    "7": "Humble Bundle",
-    "8": "Origin",
-    "9": "Ubisoft Store"
+    "1": "Steam", "2": "GOG.com", "3": "Epic Games", "11": "Epic Games",
+    "25": "Epic Games", "7": "Humble Bundle", "8": "Origin", "9": "Ubisoft Store"
 };
 
-// الترجمات
 const translations = {
     "ar": {
-        "title": "عروض الألعاب المجانية",
-        "subtitle": "ابحث عن أحدث الألعاب المجانية من منصات مختلفة!",
-        "freeGames": "الألعاب المجانية",
-        "normalPrice": "السعر العادي: ",
-        "salePrice": "السعر المخفض: ",
+        "title": "رادار 1 الألعاب | عروض الألعاب المجانية",
+        "brand": "رادار <span>1 الألعاب </span>",
+        "heroTitle": "اكتشف أحدث الألعاب المجانية",
+        "heroSubtitle": "لا تفوت الفرصة! احصل على ألعابك المفضلة مجاناً من أشهر المنصات قبل انتهاء العروض.",
+        "sectionHeading": "الألعاب المتاحة حالياً",
+        "normalPrice": "بدلاً من ",
+        "salePrice": "مجاناً",
         "getItNow": "احصل عليها الآن",
-        "noGames": "لا توجد ألعاب مجانية متاحة حاليًا. يرجى التحقق لاحقًا!",
+        "noGames": "لا توجد عروض ألعاب مجانية حالياً. عد قريباً!",
+        "footerText": "جميع الحقوق محفوظة © 2026 رادار 1 الألعاب",
+        "sponsorText": "برعاية",
         "languageButton": "English"
     },
     "en": {
-        "title": "Free Game Deals",
-        "subtitle": "Find the latest free games from various platforms!",
-        "freeGames": "Free Games",
-        "normalPrice": "Normal Price: ",
-        "salePrice": "Sale Price: ",
+        "title": "Game 1 Radar | Free Games Deals",
+        "brand": "Game <span>1 Radar</span>",
+        "heroTitle": "Discover the Latest Free Games",
+        "heroSubtitle": "Don't miss out! Get your favorite games for free from top platforms before deals expire.",
+        "sectionHeading": "Available Games",
+        "normalPrice": "Was ",
+        "salePrice": "FREE",
         "getItNow": "Get It Now",
-        "noGames": "No free games available at the moment. Check back later!",
+        "noGames": "No free games available right now. Check back later!",
+        "footerText": "All Rights Reserved © 2026 Game 1 Radar",
+        "sponsorText": "Sponsored by",
         "languageButton": "العربية"
     }
 };
 
-// جلب الألعاب المجانية من CheapShark API
 async function fetchFreeGames() {
     try {
         const response = await fetch("https://www.cheapshark.com/api/1.0/deals?upperPrice=0");
         const data = await response.json();
 
-        if (data.length === 0) {
-            throw new Error("No free games found.");
-        }
+        if (data.length === 0) throw new Error("No free games found.");
 
-        // تصفية الألعاب غير المرغوب فيها (DLC، Game Pass، إضافات، Battle Pass، Bundles، إلخ)
         const filteredGames = data.filter(game => {
             const title = game.title.toLowerCase();
-            const isGame = !title.includes("dlc") && 
-                           !title.includes("game pass") && 
-                           !title.includes("add-on") && 
-                           !title.includes("expansion") && 
-                           !title.includes("wallpaper") && 
-                           !title.includes("lynn") && 
-                           !title.includes("software") &&
-                           !title.includes("battle pass") && 
-                           !title.includes("bundle") && 
-                           !title.includes("pack") && 
-                           !title.includes("season") && 
-                           !title.includes("edition");
-            return isGame;
+            return !title.includes("dlc") && !title.includes("game pass") && 
+                   !title.includes("add-on") && !title.includes("expansion") && 
+                   !title.includes("wallpaper") && !title.includes("lynn") && 
+                   !title.includes("software") && !title.includes("battle pass") && 
+                   !title.includes("bundle") && !title.includes("pack") && 
+                   !title.includes("season") && !title.includes("edition");
         });
 
-        const games = filteredGames.map(game => ({
+        return filteredGames.map(game => ({
             title: game.title,
             normalPrice: game.normalPrice,
-            salePrice: game.salePrice,
             image: game.thumb.replace("capsule_sm_120", "header"),
             url: `https://www.cheapshark.com/redirect?dealID=${game.dealID}`,
-            platform: storeIdToPlatform[game.storeID] || "Other",
-            price: 0
+            platform: storeIdToPlatform[game.storeID] || "Other"
         }));
-
-        return games;
     } catch (error) {
         console.error("Error fetching free games:", error);
         return [];
     }
 }
 
-// عرض الألعاب في الواجهة
 function displayGames(games, containerId) {
     const container = document.getElementById(containerId);
     container.innerHTML = "";
 
     if (games.length === 0) {
-        container.innerHTML = `<p>${translations[currentLanguage].noGames}</p>`;
+        container.innerHTML = `<p class="loading">${translations[currentLanguage].noGames}</p>`;
         return;
     }
 
@@ -107,51 +90,52 @@ function displayGames(games, containerId) {
         gameCard.className = "game-card";
 
         gameCard.innerHTML = `
-            <img src="${game.image}" alt="${game.title}" loading="lazy">
-            <h3>${game.title}</h3>
-            <div class="price">
-                <div class="sale-price">${translations[currentLanguage].salePrice}${game.salePrice}</div>
-                <div class="normal-price">${translations[currentLanguage].normalPrice}${game.normalPrice}</div>
+            <img src="${game.image}" alt="${game.title}" class="game-image" loading="lazy">
+            <div class="game-info">
+                <h3 class="game-title">${game.title}</h3>
+                <div class="game-meta">
+                    <div class="price-box">
+                        <span class="sale-price">${translations[currentLanguage].salePrice}</span>
+                        <span class="normal-price">${translations[currentLanguage].normalPrice}$${game.normalPrice}</span>
+                    </div>
+                    <div class="platform-box">
+                        <img src="${platformLogos[game.platform] || platformLogos["Other"]}" alt="${game.platform}">
+                        <span>${game.platform}</span>
+                    </div>
+                </div>
+                <a href="${game.url}" target="_blank" class="btn-get">${translations[currentLanguage].getItNow}</a>
             </div>
-            <div class="platform">
-                <img src="${platformLogos[game.platform] || platformLogos["Other"]}" alt="${game.platform}">
-                <span>${game.platform}</span>
-            </div>
-            <a href="${game.url}" target="_blank">${translations[currentLanguage].getItNow}</a>
         `;
-
         container.appendChild(gameCard);
     });
 }
 
-// تحديث اللغة
 function updateLanguage() {
+    const t = translations[currentLanguage];
     document.documentElement.lang = currentLanguage;
     document.documentElement.dir = currentLanguage === "ar" ? "rtl" : "ltr";
-    document.querySelector("header h1").textContent = translations[currentLanguage].title;
-    document.querySelector("header p").textContent = translations[currentLanguage].subtitle;
-    document.querySelector("#free-games h2").textContent = translations[currentLanguage].freeGames;
-    document.getElementById("language-button").textContent = translations[currentLanguage].languageButton;
+    document.title = t.title;
+    document.querySelector(".brand").innerHTML = t.brand;
+    document.getElementById("hero-title").textContent = t.heroTitle;
+    document.getElementById("hero-subtitle").textContent = t.heroSubtitle;
+    document.getElementById("section-heading").textContent = t.sectionHeading;
+    document.getElementById("footer-text").textContent = t.footerText;
+    document.getElementById("sponsor-text").textContent = t.sponsorText;
+    document.getElementById("language-button").textContent = t.languageButton;
 }
 
-// تبديل اللغة
 function toggleLanguage() {
     currentLanguage = currentLanguage === "ar" ? "en" : "ar";
     updateLanguage();
-    main(); // تحديث قائمة الألعاب
+    main(); 
 }
 
-// الوظيفة الرئيسية
 async function main() {
     const freeGames = await fetchFreeGames();
     displayGames(freeGames, "free-games-container");
 }
 
-// تشغيل الوظيفة الرئيسية
-main();
-
-// إضافة حدث لزر اللغة
 document.getElementById("language-button").addEventListener("click", toggleLanguage);
 
-// تهيئة اللغة عند التحميل
 updateLanguage();
+main();
